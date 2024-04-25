@@ -28,6 +28,12 @@ Main repository
 https://gitlab.com/henixdevelopment/open-source/squash/squashtest-tm-staging.git
 
 
+Key config file (we should ask Hennix for good defaults)
+- bin/squash-tm.xml 
+- bin/startup.sh > HTTP_PORT; DB_TYPE, DB_URL, DB_USERNAME, DB_PASSWORD, JAVA_ARGS
+- conf/squash.tm.cfg-postgresql.properties 
+- conf/log4j2.xml 
+
 
 ## Squash Orchestrator
 
