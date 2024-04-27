@@ -1,0 +1,20 @@
+receivers:
+  otlp:
+    # Replace with the port your collector expects for OTLP traffic (default: 4317)
+    port: 4318
+
+processors:       
+  metrics_exporter: prometheus
+
+exporters:
+  prometheus:
+    endpoint: localhost:9090
+    
+service:
+  pipelines:
+    metrics:
+      receivers: [otlp]
+      exporters: [prometheus]
+    traces:
+      receivers: [otlp]
+      exporters: [prometheus]

@@ -13,6 +13,7 @@ Squash TM is a Spring Boot based app with integrated Tomcat v9. Our goal to run 
 - (done) Set proper GC param in tomcat start script 
 - (done) Disable http and enforce https
 - (done, not tested) Enable JMX for monitoring in startup script (do we also add a otel agent for tomcat?)
+- Working on OTEL agent as alternative to JMX (security as well as data quality reasons)
 - Set a proper connector for large scale in server.xml
 - Do we need to enforce log rotation?
 - Do we want to put this in Docker right away (we should, but that needs we also want to add liveness probes)?
@@ -44,10 +45,19 @@ Manual steps to perform once for local tests are
  $JAVA_HOME/bin/keytool -genkey -alias tomcat -keyalg RSA
 `
 
-Testing the app locally, go to bin directury and run startup.sh
 
-Then open a web browser with
+Testing the app locally, go to bin directury 
+1. docker run -p 9090:9090 prom/prometheus &
+2. ./startup.sh
+
+Then open a web browser with:
 https://localhost:9009/squash/login
+
+Otel agent is at:
+http://localhost:9316
+
+Prometheus runs at
+http://localhost:9090/
 
 
 ## Squash Orchestrator

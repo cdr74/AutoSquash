@@ -1,0 +1,23 @@
+receivers:
+  prometheus:
+    config:
+      scrape_configs:
+        - job_name: "squash_data_collector"
+          scrape_interval: 5s
+          metrics_path: '/actuator/prometheus'
+          static_configs:
+            - targets: ["localhost:9316"]
+
+processors:
+  batch:
+
+exporters:
+  prometheus:
+    endpoint: "localhost:9316"
+
+service:
+  pipelines:
+    metrics:
+      receivers: [prometheus]
+      processors: [batch]
+      exporters: [prometheus]

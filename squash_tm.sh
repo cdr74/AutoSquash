@@ -39,7 +39,7 @@ find database-scripts -name "mariadb*" -exec rm {} \;
 
 echo ""
 echo "------------------------------------------------------------------------"
-echo "Patch config files"
+echo "Patch config files for Java opts and SSL use"
 cd ${SQUASH_WORK_DIR}
 cp ${BASE_DIR}/templates/SquashTM/bin/startup.sh ${SQUASH_DIR}/bin/
 mkdir war_patch
@@ -51,8 +51,19 @@ cd ${SQUASH_WORK_DIR}
 rm -rf war_patch
 
 
-echo "Go to ${SQUASH_DIR}/bin and run startup.sh for tests"
+echo ""
+echo "------------------------------------------------------------------------"
+echo "Enable monitoring with OTEL agent (if this works, let's close JMX port)"
+cd ${SQUASH_WORK_DIR}
+wget https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/latest/download/opentelemetry-javaagent.jar
+mv opentelemetry-javaagent.jar ${SQUASH_DIR}/bundles
 
+# docker pull otel/opentelemetry-collector
+# docker  run -p 4318:4318 -v /home/chris/dev/AutoSquash/templates/SquashTM/conf/collector-config.yaml otel/opentelemetry-collector:latest &
+# docker pull prom/prometheus
+# docker run -p 9090:9090 -v /home/chris/dev/AutoSquash/templates/SquashTM/conf/prometheus.yml:/etc/prometheus/prometheus.yml prom/prometheus &
+
+echo "Go to ${SQUASH_DIR}/bin and run startup.sh for tests"
 
 
 echo ""
@@ -62,6 +73,6 @@ echo "TODO - Package as Docker image"
 
 echo ""
 echo "------------------------------------------------------------------------"
-echo "TODO - Cleanup work dir in [$SQUASH_WORK_DIR]"
+echo "TODO - Cleanup work dir in [${SQUASH_WORK_DIR}]"
 
 
