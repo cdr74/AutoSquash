@@ -30,8 +30,9 @@
 #####################################################################################################
 
 # Default variables
-JAR_NAME="squash-tm.war"  # Java main library
-HTTP_PORT=8080                             # Port for HTTP connector (default 8080; disable with -1)
+JAR_NAME="squash-tm.war"                   # Java main library
+# CR: unused, overwritten by application.properties in the war file
+#HTTPS_PORT=8080                               # Port for HTTP connector (default 8080; disable with -1)
 # Directory variables
 TMP_DIR=../tmp                             # Tmp and work directory
 BUNDLES_DIR=../bundles                     # Bundles directory
@@ -47,8 +48,12 @@ DB_PASSWORD=sa                              # DataBase password
 
 ## Do not configure a third digit here
 REQUIRED_VERSION=17
-# Extra Java args
-JAVA_ARGS="-Xms128m -Xmx2048m -server"
+# Extra Java args 
+# CR: enabling G1, use 8GB for prod use, also use GC logging
+JAVA_ARGS="-Xms2048m -Xmx2048m -XX:+UseG1GC"
+
+# CR: enabling JMX, use ssl and authentication for prod
+CATALINA_OPTS="-Dcom.sun.management.jmxremote.port=9099 -Dcom.sun.management.jmxremote.rmi.port=9099 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false"
 
 
 # Tests if java exists
@@ -93,8 +98,14 @@ echo  "done";
 # Let's go !
 echo "$0 : starting Squash TM... ";
 
+# CR: remove server.port as we set it in applications.properties inside the warfile
 export APP_OPTS="-Dspring.datasource.url=${DB_URL} -Dspring.datasource.username=${DB_USERNAME} -Dspring.datasource.password=${DB_PASSWORD} -Duser.language=en"
-DAEMON_ARGS="${JAVA_ARGS} ${APP_OPTS} -Djava.io.tmpdir=${TMP_DIR} -Dlogging.dir=${LOG_DIR} -jar ${BUNDLES_DIR}/${JAR_NAME} --spring.profiles.active=${DB_TYPE} --spring.config.additional-location=${CONF_DIR}/ --spring.config.name=application,squash.tm.cfg --logging.config=${CONF_DIR}/log4j2.xml --squash.path.bundles-path=${BUNDLES_DIR} --squash.path.plugins-path=${PLUGINS_DIR} --server.port=${HTTP_PORT} --server.tomcat.basedir=${TOMCAT_HOME} "
+DAEMON_ARGS="${JAVA_ARGS} ${APP_OPTS} -Djava.io.tmpdir=${TMP_DIR} -Dlogging.dir=${LOG_DIR} -jar ${BUNDLES_DIR}/${JAR_NAME} --spring.profiles.active=${DB_TYPE} --spring.config.additional-location=${CONF_DIR}/ --spring.config.name=application,squash.tm.cfg --logging.config=${CONF_DIR}/log4j2.xml --squash.path.bundles-path=${BUNDLES_DIR} --squash.path.plugins-path=${PLUGINS_DIR} --server.tomcat.basedir=${TOMCAT_HOME} "
+
+#CR: add CATALINA_OPTS to start command
+DAEMON_ARGS="${DAEMON_ARGS} ${CATALINA_OPTS}"
+
+
 
 exec java ${DAEMON_ARGS}
 
