@@ -12,6 +12,15 @@ High level approach
 _Caution_: there are multiple sources of old verions on bitbucket, github etc!
 
 
+## Monitoring
+
+Basic story for Squash TM goes like this and should be similar for the Orchestrator:
+- OTEL agent (1 per JVM) to collect Java metrics using byte code instrumentation 
+- OTEL colelctor (1 per cluster) to aggregate data from collectors and export to prometheus (format change)
+- JMX collector to get insight into Tomcat, data directly pulled from Prometheus, not involving the collector
+- Grafana to visualize data in Prometheus
+
+
 ## Squash TM
 
 Squash TM is a Spring Boot based app with integrated Tomcat v9. 
