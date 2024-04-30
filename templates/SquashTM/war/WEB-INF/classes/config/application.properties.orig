@@ -130,12 +130,3 @@ squash.external.synchronisation.delay = 60
 # You have been warned...
 spring.liquibase.enabled=false
 spring.liquibase.change-log=classpath:global.changelog-master.xml
-
-
-# CR: adding ssl
-server.port=9009
-server.ssl.key-store=/home/chris/.keystore
-server.ssl.key-store-password=password
-server.ssl.keyStoreType=PKCS12
-server.ssl.keyAlias=tomcat
-
