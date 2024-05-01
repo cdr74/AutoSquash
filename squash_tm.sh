@@ -7,7 +7,7 @@ FAIL="\e[31m"    # RED COLOR
 END="\e[0m"      # END COLOR
 
 ## SSL CONFIGURATION
-## WARNING: Update KEY_STORE & PASSWORD before executing a build by settting env var PATH_TO_KEYSTORE and KEYSTORE_PWD
+## WARNING: Set the environment variables PATH_TO_KEYSTORE and KEYSTORE_PWD before running this script
 SSL_PORT="server.port=9009"
 SSL_KEY_STORE="server.ssl.key-store=${PATH_TO_KEYSTORE}/.keystore"
 SSL_KEY_STORE_PASSWORD="server.ssl.key-store-password=${KEYSTORE_PWD}"
@@ -17,6 +17,7 @@ SSL_KEY_SOTRE_KEYALIAS="server.ssl.keyAlias=tomcat"
 BASE_DIR=$(pwd)
 
 SQUASH_RELEASE="6.0.1"
+SQUASH_PLUGIN_RELEASE="6.0.0"
 SQUASH_REPOSITORY="https://nexus.squashtest.org/nexus/repository/public-releases/tm/core/squash-tm-distribution/"
 OPEN_TELEMETRY_AGENT="https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/latest/download/opentelemetry-javaagent.jar"
 PROMETHEUS_JMX_EXPORTER="https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_httpserver/0.20.0/jmx_prometheus_httpserver-0.20.0.jar"
@@ -196,7 +197,7 @@ fi
 
 echo ""
 echo "------------------------------------------------------------------------"
-echo "7. Enable monitoring with OTEL agent "
+echo "7. Enable monitoring with OTEL agent (Open Telemetry) "
 cd ${SQUASH_WORK_DIR}
 
 if [[ $(wget -S --spider $OPEN_TELEMETRY_AGENT 2>&1 | grep 'HTTP/1.1 200 OK') ]]; then
@@ -245,6 +246,18 @@ if [ $? -eq 0 ]; then
 fi
 
 
+echo ""
+echo "------------------------------------------------------------------------"
+echo "8. Enable plugins"
+cp ${SQUASH_DIR}/plugin-files/gitlab/bugtracker.gitlab-${SQUASH_PLUGIN_RELEASE}.RELEASE/plugins/bugtracker.gitlab-${SQUASH_PLUGIN_RELEASE}.RELEASE.jar ${SQUASH_DIR}/plugins
+if [ $? -eq 0 ]; then
+  echo $(printf "${SUCCESS} > Success - Plugin: bugtracker.gitlab enabled${END}")
+fi
+
+cp ${SQUASH_DIR}/plugin-files/xsquash4gitlab/sync.xsquash4gitlab-${SQUASH_PLUGIN_RELEASE}.RELEASE/plugins/sync.xsquash4gitlab-${SQUASH_PLUGIN_RELEASE}.RELEASE.jar ${SQUASH_DIR}/plugins
+if [ $? -eq 0 ]; then
+  echo $(printf "${SUCCESS} > Success - Plugin: xsquash4gitlab enabled${END}")
+fi
 
 echo ""
 echo $(printf "${SUCCESS}The setup is Ready !${END}")
