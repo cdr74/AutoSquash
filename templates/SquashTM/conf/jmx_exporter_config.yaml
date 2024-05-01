@@ -1,0 +1,6 @@
+lowercaseOutputName: false
+lowercaseOutputLabelNames: false
+whitelistObjectNames: ["java.lang:type=Memory", "java.lang:type=OperatingSystem", "java.lang:type=Threading"]
+hostPort: 'localhost:9099'
+rules:
+- pattern: ".*"

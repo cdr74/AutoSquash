@@ -55,7 +55,6 @@ JAVA_ARGS="-Xms2048m -Xmx2048m -XX:+UseG1GC"
 # CR: enabling JMX, use ssl and authentication for prod... working on otel as alternative
 CATALINA_OPTS="-Dcom.sun.management.jmxremote.port=9099 -Dcom.sun.management.jmxremote.rmi.port=9099 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false"
 
-
 # Tests if java exists
 echo -n "$0 : checking java environment... ";
 
@@ -109,6 +108,12 @@ export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318
 OTEL_ARGS="-javaagent:${BUNDLES_DIR}/opentelemetry-javaagent.jar"
 DAEMON_ARGS="${OTEL_ARGS} ${DAEMON_ARGS} ${CATALINA_OPTS}"
 
+# CR: As we can not have 2 java agents (jmx exporter and otel java agent) we have to start JMX exporter seperatly as a process
+# should we kill this if already running or accept start to fail?
+MONITOR_ARGS="-jar ${BUNDLES_DIR}/jmx_prometheus_httpserver-0.20.0.jar 9033 ${CONF_DIR}/jmx_exporter_config.yaml"
+echo "Starting JMX standalone exporter with [${MONITOR_ARGS}]"
+exec java ${MONITOR_ARGS} &
 
+echo "Starting Squash with [${DAEMON_ARGS}]"
 exec java ${DAEMON_ARGS}
 

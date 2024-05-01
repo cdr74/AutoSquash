@@ -7,10 +7,10 @@ FAIL="\e[31m"    # RED COLOR
 END="\e[0m"      # END COLOR
 
 ## SSL CONFIGURATION
-## WARNING: Update KEY_STORE & PASSWORD before executing a build 
+## WARNING: Update KEY_STORE & PASSWORD before executing a build by settting env var PATH_TO_KEYSTORE and KEYSTORE_PWD
 SSL_PORT="server.port=9009"
-SSL_KEY_STORE="server.ssl.key-store=PATH_TO_KEYSTORE.keystore"
-SSL_KEY_STORE_PASSWORD="server.ssl.key-store-password=******"
+SSL_KEY_STORE="server.ssl.key-store=${PATH_TO_KEYSTORE}/.keystore"
+SSL_KEY_STORE_PASSWORD="server.ssl.key-store-password=${KEYSTORE_PWD}"
 SSL_KEY_STORE_TYPE="server.ssl.keyStoreType=PKCS12"
 SSL_KEY_SOTRE_KEYALIAS="server.ssl.keyAlias=tomcat"
 
@@ -19,6 +19,7 @@ BASE_DIR=$(pwd)
 SQUASH_RELEASE="6.0.1"
 SQUASH_REPOSITORY="https://nexus.squashtest.org/nexus/repository/public-releases/tm/core/squash-tm-distribution/"
 OPEN_TELEMETRY_AGENT="https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/latest/download/opentelemetry-javaagent.jar"
+PROMETHEUS_JMX_EXPORTER="https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_httpserver/0.20.0/jmx_prometheus_httpserver-0.20.0.jar"
 
 SQUASH_WORK_DIR="${BASE_DIR}/SquashTM_work"
 SQUASH_DIR="${SQUASH_WORK_DIR}/squash-tm"
@@ -26,6 +27,8 @@ SQUASH_DIR="${SQUASH_WORK_DIR}/squash-tm"
 SQUASH_DOWNLOAD_URL="${SQUASH_REPOSITORY}/${SQUASH_RELEASE}.RELEASE/"
 SQUASH_DOWNLOAD_FILE="squash-tm-${SQUASH_RELEASE}.RELEASE.tar.gz"
 SQUASH_DOWNLOAD_FULL_URL="${SQUASH_DOWNLOAD_URL}${SQUASH_DOWNLOAD_FILE}"
+
+
 
 echo "########################################################################"
 echo "#### SQUASH BUILD SCRIPT FOR ${SQUASH_DOWNLOAD_FILE}  "
@@ -39,6 +42,7 @@ if [ -d "${SQUASH_WORK_DIR}" ]; then rm -Rf ${SQUASH_WORK_DIR}; fi
 mkdir ${SQUASH_WORK_DIR}
 cd ${SQUASH_WORK_DIR}
 echo $(printf "${SUCCESS} > Success - working directory created [$SQUASH_WORK_DIR] ${END}")
+
 
 echo ""
 echo "------------------------------------------------------------------------"
@@ -55,11 +59,14 @@ fi
 ## TODO: Build a checksum ? e.g. wget -O - http://example.com/myFile | tee myFile | md5sum > MD5SUM.
 ## OR CHECK IF VENDOR IS PROVIDING A CHECKSUM FILE
 
+
 echo ""
 echo "------------------------------------------------------------------------"
 echo "3. Download release v${SQUASH_RELEASE}"
 echo " > URL: ${SQUASH_DOWNLOAD_FULL_URL}"
 echo " > Start dowloading..."
+# ---------- for faster TESTING copy local instead of wget -----------
+#cp /home/chris/dev/squash-tm-6.0.1.RELEASE.tar.gz $(pwd)
 wget -q --show-progress -N ${SQUASH_DOWNLOAD_FULL_URL}
 if [ $? -eq 0 ]; then
   echo $(printf "${SUCCESS} > Success - Release v${SQUASH_RELEASE} has been downloaded in $(pwd)${END}")
@@ -67,6 +74,7 @@ else
   echo $(printf "${FAIL} > Error - Download failed${END}")
   exit 1
 fi
+
 
 echo ""
 echo "------------------------------------------------------------------------"
@@ -86,6 +94,7 @@ else
   exit 1
 fi
 cd ${SQUASH_DIR}
+
 
 echo ""
 echo "------------------------------------------------------------------------"
@@ -113,6 +122,7 @@ fi
 ## TODO: Do we replace completly the files as it's being done ?
 ## OR we do a patch that we apply ?
 ## OR we dynamically change the files content by adding / changing what we miss ? 
+
 
 echo ""
 echo "------------------------------------------------------------------------"
@@ -183,9 +193,10 @@ fi
 ## TODO: Download from GitHub might be restricted
 ## Is Open-telemetry package available in our Nexus setup ?
 
+
 echo ""
 echo "------------------------------------------------------------------------"
-echo "7. Enable monitoring with OTEL agent (if this works, let's close JMX port)"
+echo "7. Enable monitoring with OTEL agent "
 cd ${SQUASH_WORK_DIR}
 
 if [[ $(wget -S --spider $OPEN_TELEMETRY_AGENT 2>&1 | grep 'HTTP/1.1 200 OK') ]]; then
@@ -208,6 +219,33 @@ if [ $? -eq 0 ]; then
   echo $(printf "${SUCCESS} > Success - Telemetry agent set in ${SQUASH_DIR}/bundles${END}")
 fi
 
+if [[ $(wget -S --spider $PROMETHEUS_JMX_EXPORTER 2>&1 | grep 'HTTP/1.1 200 OK') ]]; then
+  echo $(printf "${SUCCESS} > Success - JMX exporter file detected !${END}")
+else
+  echo $(printf "${FAIL} > Error - JMX exporter file not found !${END}")
+  exit 1
+fi
+
+wget -q --show-progress -N "$PROMETHEUS_JMX_EXPORTER"
+if [ $? -eq 0 ]; then
+  echo $(printf "${SUCCESS} > Success - JMX exporter file has been downloaded !${END}")
+else
+  echo $(printf "${FAIL} > Error - Download failed!${END}")
+  exit 1
+fi
+
+mv jmx_prometheus_httpserver-0.20.0.jar ${SQUASH_DIR}/bundles
+if [ $? -eq 0 ]; then
+  echo $(printf "${SUCCESS} > Success - JMX exporter set in ${SQUASH_DIR}/bundles${END}")
+fi
+
+cp ${BASE_DIR}/templates/SquashTM/conf/jmx_exporter_config.yaml ${SQUASH_DIR}/conf
+if [ $? -eq 0 ]; then
+  echo $(printf "${SUCCESS} > Success - JMX exporter config set in ${SQUASH_DIR}/conf${END}")
+fi
+
+
+
 echo ""
 echo $(printf "${SUCCESS}The setup is Ready !${END}")
 echo "Go to ${SQUASH_DIR}/bin and run startup.sh for tests"
@@ -219,9 +257,11 @@ exit 0
 # docker pull prom/prometheus
 # docker run -p 9090:9090 -v /home/chris/dev/AutoSquash/templates/SquashTM/conf/prometheus.yml:/etc/prometheus/prometheus.yml prom/prometheus &
 
+
 echo ""
 echo "------------------------------------------------------------------------"
 echo "TODO - Package as Docker image"
+
 
 echo ""
 echo "------------------------------------------------------------------------"

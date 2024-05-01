@@ -17,8 +17,15 @@ _Caution_: there are multiple sources of old verions on bitbucket, github etc!
 Basic story for Squash TM goes like this and should be similar for the Orchestrator:
 
 -   OTEL agent (1 per JVM) to collect Java metrics using byte code instrumentation
--   OTEL colelctor (1 per cluster) to aggregate data from collectors and export to prometheus (format change)
--   JMX collector to get insight into Tomcat, data directly pulled from Prometheus, not involving the collector
+    - the agent sends data over http to the collector listening on 4318 (stratup.sh)
+    https://opentelemetry.io/docs/languages/java/automatic/configuration/
+-   OTEL collector (1 per cluster) to aggregate data from collectors and export to prometheus (format change)
+    - the collector sends data to prometheus listening on 9316 (otel-agent-collector.yml)
+    https://opentelemetry.io/docs/collector/configuration/
+-   Run prometheus JMX exporter to grab JMX over localhost from tomcat and send it to prometheus
+    - the jmx exporter reads locally from 9099 (jmx_exporter_config.yml) and can be read from 9033 (startup.sh) 
+    https://github.com/prometheus/jmx_exporter/tree/release-0.20.0 
+-   Prometheus 
 -   Grafana to visualize data in Prometheus
 
 ## Squash TM
@@ -27,26 +34,23 @@ Squash TM is a Spring Boot based app with integrated Tomcat v9.
 
 **Completed**
 
--   (done) Set proper GC param in "startup.sh"
--   (done) Enable JMX for monitoring in "startup.sh" -> might replace this with prmetheus jmx exporter
--   (done) Disable http and enforce https in "application.properties", requires patching of war file
--   (done) Enable OTEL javaagent in "startup.sh"; needs download of the agent
--   (done) Connect with OTEL collector and the send dat to prometheus (should be seperate package for distribution)
+-   Set proper GC param in "startup.sh" (currently at 2GB, should be 8GB in prod)
+-   Disable http and enforce https in "application.properties", requires patching of war file
+-   Enable JMX for monitoring in "startup.sh" and add JMX scraper from Prometheus
+-   Enable OTEL javaagent in "startup.sh"; needs download of the agent
+-   Connect with OTEL collector and the send dat to prometheus (should be seperate package for distribution)
 
 **Todo**
 
--   (todo) Add root CA to keystore and tune ssl for performance (out of the box is ... meh)
+-   Add root CA to keystore and tune ssl for performance (out of the box is ... meh)
     -   TO BE FIXED ! Current path is encoded in war /home/chris/.keystore
--   (todo) Setup Grafana to visualize data in prometheus
--   (todo) Set a proper connector config for tomcat in "application.properties", requires patching of war file
--   (todo) Prod grade log config in "log4j2.xml"
--   (todo) Add missing plugins
-    -   SquashGitLab
-    -   BugTracker GitLab
--   (todo) find a smarter patching approach
+-   Setup Grafana to visualize data in prometheus
+-   Set a proper Tomcat connector config "application.properties", requires patching of war file
+-   Prod grade log config in "log4j2.xml"
+-   find a smarter patching approach
     -   e.g. Set variable in the build script with the new parameters
     -   e.g. Copy old file as .orig and replace them with the new one
--   (todo) Packaging as Docker or tar ball
+-   (?) Packaging as Docker or tar ball
 
 All changes in config files in template folder are commented with "# CR:", could be a multi line change.
 
