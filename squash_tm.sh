@@ -67,8 +67,8 @@ echo "3. Download release v${SQUASH_RELEASE}"
 echo " > URL: ${SQUASH_DOWNLOAD_FULL_URL}"
 echo " > Start dowloading..."
 # ---------- for faster TESTING copy local instead of wget -----------
-#cp /home/chris/dev/squash-tm-6.0.1.RELEASE.tar.gz $(pwd)
-wget -q --show-progress -N ${SQUASH_DOWNLOAD_FULL_URL}
+cp /home/chris/dev/squash-tm-6.0.1.RELEASE.tar.gz $(pwd)
+#wget -q --show-progress -N ${SQUASH_DOWNLOAD_FULL_URL}
 if [ $? -eq 0 ]; then
   echo $(printf "${SUCCESS} > Success - Release v${SQUASH_RELEASE} has been downloaded in $(pwd)${END}")
 else

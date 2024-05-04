@@ -14,19 +14,24 @@ _Caution_: there are multiple sources of old verions on bitbucket, github etc!
 
 ## Monitoring
 
-Basic story for Squash TM goes like this and should be similar for the Orchestrator:
+Here are all the involved ports / agents / processes:
 
--   OTEL agent (1 per JVM) to collect Java metrics using byte code instrumentation
-    -   the agent sends data over http to the collector listening on 4318 (stratup.sh)
+-   Tomcat JMX is enabled as part of the startup.sh
+    Exposes data on port 9099
+    Use this to check jmx: jconsole service:jmx:rmi:///jndi/rmi://localhost:9099/jmxrmi
+-   Prometheus JMX exporter runs as seperate process and is started in startup.sh
+    - Grabs data from JMX port 9099
+    - Exposes data on port 9033 
+    - Config in jmx_exporter_config.yml
+      https://github.com/prometheus/jmx_exporter/tree/release-0.20.0
+-   OTEL agent (1 per JVM) runs as part of the tomcat process to collect Java metrics using byte code instrumentation
+    -   the agent sends data over http to the OTEL collector listening on 4318 (stratup.sh)
         https://opentelemetry.io/docs/languages/java/automatic/configuration/
--   OTEL collector (1 per cluster) to aggregate data from collectors and export to prometheus (format change)
+-   OTEL collector (1 per cluster) to aggregate data from collectors and exports to prometheus (format change)
     -   the collector sends data to prometheus listening on 9316 (otel-agent-collector.yml)
         https://opentelemetry.io/docs/collector/configuration/
--   Run prometheus JMX exporter to grab JMX over localhost from tomcat and send it to prometheus
-    -   the jmx exporter reads locally from 9099 (jmx_exporter_config.yml) and can be read from 9033 (startup.sh)
-        https://github.com/prometheus/jmx_exporter/tree/release-0.20.0
--   Prometheus
--   Grafana to visualize data in Prometheus
+-   Prometheus can be accessed from port 9090
+-   Grafana to visualize data runs on port 3000 and connects to prometheus over docker network (http://prometheus:9090)
 
 ## Squash TM
 
@@ -73,14 +78,7 @@ Manual steps to perform once for local tests are to setup a keystore
  $JAVA_HOME/bin/keytool -genkey -alias tomcat -keyalg RSA
 ```
 
-Manual steps to get OTEL collector and prometheus going
-
-```
- docker pull otel/opentelemetry-collector
- docker  run -p 4318:4318 -v /home/chris/dev/AutoSquash/templates/SquashTM/conf/collector-config.yaml otel/opentelemetry-collector:latest &
- docker pull prom/prometheus
- docker run -p 9090:9090 -v /home/chris/dev/AutoSquash/templates/SquashTM/conf/prometheus.yml:/etc/prometheus/prometheus.yml prom/prometheus &
-```
+Steps to get OTEL collector and prometheus going see `start_monitoring.sh`
 
 Testing the app locally, go to bin directury by running `./startup.sh &`
 

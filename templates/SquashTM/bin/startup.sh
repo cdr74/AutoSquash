@@ -53,7 +53,10 @@ REQUIRED_VERSION=17
 JAVA_ARGS="-Xms2048m -Xmx2048m -XX:+UseG1GC"
 
 # CR: enabling JMX, use ssl and authentication for prod... working on otel as alternative
-CATALINA_OPTS="-Dcom.sun.management.jmxremote.port=9099 -Dcom.sun.management.jmxremote.rmi.port=9099 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false"
+JAVA_ARGS="$JAVA_ARGS -Dcom.sun.management.jmxremote -Djava.rmi.server.hostname=localhost"
+JAVA_ARGS="$JAVA_ARGS -Dcom.sun.management.jmxremote.port=9099"
+JAVA_ARGS="$JAVA_ARGS -Dcom.sun.management.jmxremote.ssl=false"
+JAVA_ARGS="$JAVA_ARGS -Dcom.sun.management.jmxremote.authenticate=false"
 
 # Tests if java exists
 echo -n "$0 : checking java environment... ";
@@ -94,9 +97,6 @@ fi
 echo  "done";
 
 
-# Let's go !
-echo "$0 : starting Squash TM... ";
-
 # CR: remove server.port as we set it in applications.properties inside the warfile
 export APP_OPTS="-Dspring.datasource.url=${DB_URL} -Dspring.datasource.username=${DB_USERNAME} -Dspring.datasource.password=${DB_PASSWORD} -Duser.language=en"
 DAEMON_ARGS="${JAVA_ARGS} ${APP_OPTS} -Djava.io.tmpdir=${TMP_DIR} -Dlogging.dir=${LOG_DIR} -jar ${BUNDLES_DIR}/${JAR_NAME} --spring.profiles.active=${DB_TYPE} --spring.config.additional-location=${CONF_DIR}/ --spring.config.name=application,squash.tm.cfg --logging.config=${CONF_DIR}/log4j2.xml --squash.path.bundles-path=${BUNDLES_DIR} --squash.path.plugins-path=${PLUGINS_DIR} --server.tomcat.basedir=${TOMCAT_HOME} "
@@ -106,13 +106,17 @@ export OTEL_SERVICE_NAME=squash-tm
 export OTEL_EXPORTER=otlp
 export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318
 OTEL_ARGS="-javaagent:${BUNDLES_DIR}/opentelemetry-javaagent.jar"
-DAEMON_ARGS="${OTEL_ARGS} ${DAEMON_ARGS} ${CATALINA_OPTS}"
+DAEMON_ARGS="${OTEL_ARGS} ${DAEMON_ARGS}"
 
 # CR: As we can not have 2 java agents (jmx exporter and otel java agent) we have to start JMX exporter seperatly as a process
 # should we kill this if already running or accept start to fail?
 MONITOR_ARGS="-jar ${BUNDLES_DIR}/jmx_prometheus_httpserver-0.20.0.jar 9033 ${CONF_DIR}/jmx_exporter_config.yaml"
 echo "Starting JMX standalone exporter with [${MONITOR_ARGS}]"
 exec java ${MONITOR_ARGS} &
+
+
+# Let's go !
+echo "$0 : starting Squash TM... ";
 
 echo "Starting Squash with [${DAEMON_ARGS}]"
 exec java ${DAEMON_ARGS}

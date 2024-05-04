@@ -1,6 +1,6 @@
 lowercaseOutputName: false
 lowercaseOutputLabelNames: false
 whitelistObjectNames: ["java.lang:type=Memory", "java.lang:type=OperatingSystem", "java.lang:type=Threading"]
-hostPort: 'localhost:9099'
+jmxUrl: service:jmx:rmi:///jndi/rmi://localhost:9099/jmxrmi
 rules:
 - pattern: ".*"
