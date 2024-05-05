@@ -112,12 +112,11 @@ DAEMON_ARGS="${OTEL_ARGS} ${DAEMON_ARGS}"
 # should we kill this if already running or accept start to fail?
 MONITOR_ARGS="-jar ${BUNDLES_DIR}/jmx_prometheus_httpserver-0.20.0.jar 9033 ${CONF_DIR}/jmx_exporter_config.yaml"
 echo "Starting JMX standalone exporter with [${MONITOR_ARGS}]"
-exec java ${MONITOR_ARGS} &
+java ${MONITOR_ARGS} &
 
 
 # Let's go !
 echo "$0 : starting Squash TM... ";
 
 echo "Starting Squash with [${DAEMON_ARGS}]"
-exec java ${DAEMON_ARGS}
-
+java ${DAEMON_ARGS}

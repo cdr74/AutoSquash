@@ -17,8 +17,13 @@ set -e
 # http://prometheus:9090
 #
 # To stop all moniotoring tools: docker stop $(docker ps -q)
+#
+#
+# Currently config files under squash... should be independent
 # ---------------------------------------------------------------------------------------------
 
+CONF_DIR=/home/chris/dev/AutoSquash/templates/SquashTM/conf
+BUNDLES_DIR=/home/chris/dev/AutoSquash/SquashTM_work/squash-tm/bundles 
 
 NETWORK_NAME="squash-monitoring-network"
 
@@ -31,11 +36,16 @@ else
     echo "Network '$NETWORK_NAME' already exists."
 fi
 
+
+MONITOR_ARGS="-jar ${BUNDLES_DIR}/jmx_prometheus_httpserver-0.20.0.jar 9033 ${CONF_DIR}/jmx_exporter_config.yaml"
+echo "Starting JMX standalone exporter with [${MONITOR_ARGS}]"
+java ${MONITOR_ARGS} &
+
 echo "Starting OTEL Collector on port 4318"
-docker run -d --name collector --network $NETWORK_NAME -p 4318:4318 -v /home/chris/dev/AutoSquash/templates/SquashTM/conf/collector-config.yaml otel/opentelemetry-collector:latest > otel_collector.log 2>&1
+docker run -d --name collector --network $NETWORK_NAME -p 4318:4318 -v ${CONF_DIR}/collector-config.yaml otel/opentelemetry-collector > otel_collector.log 2>&1
 
 echo "Starting Prometheus on port 9090"
-docker run -d --name prometheus --network $NETWORK_NAME -p 9090:9090 -v /home/chris/dev/AutoSquash/templates/SquashTM/conf/prometheus.yml:/etc/prometheus/prometheus.yml prom/prometheus > prometheus.log 2>&1
+docker run -d --name prometheus --network $NETWORK_NAME -p 9090:9090 -v ${CONF_DIR}/prometheus.yml prom/prometheus > prometheus.log 2>&1
 
 echo "Starting Grafana on port 3000"
 docker run -d --name grafana --network $NETWORK_NAME -p 3000:3000 grafana/grafana-enterprise > grafana.log 2>&1

@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# kill the collector
+lsof -ti :9033 | xargs kill
+
 # Stop and remove containers
 docker stop collector prometheus grafana
 docker rm collector prometheus grafana

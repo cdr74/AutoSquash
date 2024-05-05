@@ -46,11 +46,11 @@ Squash TM is a Spring Boot based app with integrated Tomcat v9.
 -   Connect with OTEL collector and the send dat to prometheus (should be seperate package for distribution)
 -   Enabled Xsquash4GitLab connector (plugin)
 -   Enabled gitlab.bugtracker bugtracker (plugin)
+-   Added Grafana to Prometheus
 
 **Todo**
 
 -   Add root CA to keystore and tune ssl for performance (out of the box is ... meh)
--   Setup Grafana to visualize data in prometheus
 -   Set a proper Tomcat connector config "application.properties", requires patching of war file
 -   Prod grade log config in "log4j2.xml"
 -   find a smarter patching approach

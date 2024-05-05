@@ -1,7 +1,7 @@
 receivers:
   otlp:
     protocols:
-      grpc:
+      otlp: "localhost:4018"
 
 exporters:
   prometheus:

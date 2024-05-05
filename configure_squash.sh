@@ -245,6 +245,18 @@ if [ $? -eq 0 ]; then
   echo $(printf "${SUCCESS} > Success - JMX exporter config set in ${SQUASH_DIR}/conf${END}")
 fi
 
+# not the best place for this config, should be independent of squash
+cp ${BASE_DIR}/templates/SquashTM/conf/collector-config.yaml ${SQUASH_DIR}/conf
+if [ $? -eq 0 ]; then
+  echo $(printf "${SUCCESS} > Success - Otel collector config set in ${SQUASH_DIR}/conf${END}")
+fi
+
+# not the best place for this config, should be independent of squash
+cp ${BASE_DIR}/templates/SquashTM/conf/prometheus.yml ${SQUASH_DIR}/conf
+if [ $? -eq 0 ]; then
+  echo $(printf "${SUCCESS} > Success - Prometheus config set in ${SQUASH_DIR}/conf${END}")
+fi
+
 
 echo ""
 echo "------------------------------------------------------------------------"
@@ -261,14 +273,10 @@ fi
 
 echo ""
 echo $(printf "${SUCCESS}The setup is Ready !${END}")
+echo "Use start_monitoring.sh before starting Squash"
 echo "Go to ${SQUASH_DIR}/bin and run startup.sh for tests"
 exit 0
 
-# wget https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/latest/download/opentelemetry-javaagent.jar
-# docker pull otel/opentelemetry-collector
-# docker  run -p 4318:4318 -v /home/chris/dev/AutoSquash/templates/SquashTM/conf/collector-config.yaml otel/opentelemetry-collector:latest &
-# docker pull prom/prometheus
-# docker run -p 9090:9090 -v /home/chris/dev/AutoSquash/templates/SquashTM/conf/prometheus.yml:/etc/prometheus/prometheus.yml prom/prometheus &
 
 
 echo ""
