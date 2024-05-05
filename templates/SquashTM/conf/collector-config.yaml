@@ -1,10 +1,15 @@
 receivers:
   otlp:
     # Replace with the port your collector expects for OTLP traffic (default: 4317)
+    host: localhost
     port: 4318
 
-processors:       
+processors:
   metrics_exporter: prometheus
+  # This processor batches data for 15 seconds and then exports it.
+  batch:
+    timeout: 15s
+    # max_queue_size: 1000  # Number of metrics to queue before export
 
 exporters:
   prometheus:

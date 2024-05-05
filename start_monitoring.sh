@@ -25,7 +25,7 @@ set -e
 CONF_DIR=/home/chris/dev/AutoSquash/templates/SquashTM/conf
 BUNDLES_DIR=/home/chris/dev/AutoSquash/SquashTM_work/squash-tm/bundles 
 
-NETWORK_NAME="squash-monitoring-network"
+NETWORK_NAME="host"
 
 # Check if the network exists
 if ! docker network inspect "$NETWORK_NAME" &> /dev/null; then
@@ -45,7 +45,7 @@ echo "Starting OTEL Collector on port 4318"
 docker run -d --name collector --network $NETWORK_NAME -p 4318:4318 -v ${CONF_DIR}/collector-config.yaml otel/opentelemetry-collector > otel_collector.log 2>&1
 
 echo "Starting Prometheus on port 9090"
-docker run -d --name prometheus --network $NETWORK_NAME -p 9090:9090 -v ${CONF_DIR}/prometheus.yml prom/prometheus > prometheus.log 2>&1
+docker run -d --name prometheus --network $NETWORK_NAME -p 9090:9090 -v ${CONF_DIR}/prometheus.yml:/etc/prometheus/prometheus.yml prom/prometheus  > prometheus.log 2>&1
 
 echo "Starting Grafana on port 3000"
 docker run -d --name grafana --network $NETWORK_NAME -p 3000:3000 grafana/grafana-enterprise > grafana.log 2>&1

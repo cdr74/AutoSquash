@@ -108,13 +108,6 @@ export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318
 OTEL_ARGS="-javaagent:${BUNDLES_DIR}/opentelemetry-javaagent.jar"
 DAEMON_ARGS="${OTEL_ARGS} ${DAEMON_ARGS}"
 
-# CR: As we can not have 2 java agents (jmx exporter and otel java agent) we have to start JMX exporter seperatly as a process
-# should we kill this if already running or accept start to fail?
-MONITOR_ARGS="-jar ${BUNDLES_DIR}/jmx_prometheus_httpserver-0.20.0.jar 9033 ${CONF_DIR}/jmx_exporter_config.yaml"
-echo "Starting JMX standalone exporter with [${MONITOR_ARGS}]"
-java ${MONITOR_ARGS} &
-
-
 # Let's go !
 echo "$0 : starting Squash TM... ";
 
