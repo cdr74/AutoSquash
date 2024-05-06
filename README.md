@@ -9,6 +9,7 @@ The goal is that a distribution package is created in a reproducible fashion wit
 -   Use the prod tar.gz from the official distribution
 -   Create a copy with all files that need changes in templates folder
 -   Automate the patching and re-packaging process (coule be run in a pipeline)
+-   Create another script (pipeline) to distribute the re-configured set-up
 
 _Caution_: there are multiple sources of old verions on bitbucket, github etc!
 

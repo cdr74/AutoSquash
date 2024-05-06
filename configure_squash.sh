@@ -30,7 +30,6 @@ SQUASH_DOWNLOAD_FILE="squash-tm-${SQUASH_RELEASE}.RELEASE.tar.gz"
 SQUASH_DOWNLOAD_FULL_URL="${SQUASH_DOWNLOAD_URL}${SQUASH_DOWNLOAD_FILE}"
 
 
-
 echo "########################################################################"
 echo "#### SQUASH BUILD SCRIPT FOR ${SQUASH_DOWNLOAD_FILE}  "
 echo "#### © Copyright 2024, Christian Räss & Xavier Oswald "
@@ -161,62 +160,18 @@ echo "------------------------------------------------------------------------"
 echo "7. Enable monitoring with OTEL agent (Open Telemetry) "
 cd ${SQUASH_WORK_DIR}
 
-if [[ $(wget -S --spider $OPEN_TELEMETRY_AGENT 2>&1 | grep 'HTTP/1.1 200 OK') ]]; then
-  echo $(printf "${SUCCESS} > Success - Telemetry agent file detected !${END}")
-else
-  echo $(printf "${FAIL} > Error - Telemetry agent file not found !${END}")
-  exit 1
-fi
-
-wget -q --show-progress -N ${OPEN_TELEMETRY_AGENT}
-if [ $? -eq 0 ]; then
-  echo $(printf "${SUCCESS} > Success - Telemetry agent has been downloaded !${END}")
-else
-  echo $(printf "${FAIL} > Error - Download failed!${END}")
-  exit 1
-fi
-
-mv opentelemetry-javaagent.jar ${SQUASH_DIR}/bundles
-if [ $? -eq 0 ]; then
-  echo $(printf "${SUCCESS} > Success - Telemetry agent set in ${SQUASH_DIR}/bundles${END}")
-fi
-
-if [[ $(wget -S --spider $PROMETHEUS_JMX_EXPORTER 2>&1 | grep 'HTTP/1.1 200 OK') ]]; then
-  echo $(printf "${SUCCESS} > Success - JMX exporter file detected !${END}")
-else
-  echo $(printf "${FAIL} > Error - JMX exporter file not found !${END}")
-  exit 1
-fi
-
-wget -q --show-progress -N "$PROMETHEUS_JMX_EXPORTER"
-if [ $? -eq 0 ]; then
-  echo $(printf "${SUCCESS} > Success - JMX exporter file has been downloaded !${END}")
-else
-  echo $(printf "${FAIL} > Error - Download failed!${END}")
-  exit 1
-fi
-
-mv jmx_prometheus_httpserver-0.20.0.jar ${SQUASH_DIR}/bundles
-if [ $? -eq 0 ]; then
-  echo $(printf "${SUCCESS} > Success - JMX exporter set in ${SQUASH_DIR}/bundles${END}")
-fi
-
-cp ${BASE_DIR}/templates/SquashTM/conf/jmx_exporter_config.yaml ${SQUASH_DIR}/conf
-if [ $? -eq 0 ]; then
-  echo $(printf "${SUCCESS} > Success - JMX exporter config set in ${SQUASH_DIR}/conf${END}")
-fi
-
-# not the best place for this config, should be independent of squash
-cp ${BASE_DIR}/templates/SquashTM/conf/collector-config.yaml ${SQUASH_DIR}/conf
-if [ $? -eq 0 ]; then
-  echo $(printf "${SUCCESS} > Success - Otel collector config set in ${SQUASH_DIR}/conf${END}")
-fi
-
 # not the best place for this config, should be independent of squash
 cp ${BASE_DIR}/templates/SquashTM/conf/prometheus.yml ${SQUASH_DIR}/conf
 if [ $? -eq 0 ]; then
   echo $(printf "${SUCCESS} > Success - Prometheus config set in ${SQUASH_DIR}/conf${END}")
 fi
+
+echo $(printf "${SUCCESS} > Success - Enabling spring actuator for monitoring in ${SQUASH_DIR}/conf/squash.tm.cfg.properties${END}")
+echo "management.endpoints.enabled-by-default=true" >> ${SQUASH_DIR}/conf/squash.tm.cfg.properties
+# echo "management.endpoints.web.exposure.include = health" >> ${SQUASH_DIR}/conf/squash.tm.cfg.properties
+echo "management.endpoints.web.exposure.include=*" >> ${SQUASH_DIR}/conf/squash.tm.cfg.properties
+#echo "management.endpoints.web.exposure.include=beans,health,info,metrics,prometheus,conditions,env,threaddump" >> ${SQUASH_DIR}/conf/squash.tm.cfg.properties
+echo "management.endpoint.prometheus.enabled=true" >> ${SQUASH_DIR}/conf/squash.tm.cfg.properties
 
 
 echo ""

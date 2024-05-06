@@ -27,23 +27,6 @@ BUNDLES_DIR=/home/chris/dev/AutoSquash/SquashTM_work/squash-tm/bundles
 
 NETWORK_NAME="host"
 
-# Check if the network exists
-if ! docker network inspect "$NETWORK_NAME" &> /dev/null; then
-    # Network does not exist, create it
-    docker network create "$NETWORK_NAME"
-    echo "Network '$NETWORK_NAME' created."
-else
-    echo "Network '$NETWORK_NAME' already exists."
-fi
-
-
-MONITOR_ARGS="-jar ${BUNDLES_DIR}/jmx_prometheus_httpserver-0.20.0.jar 9033 ${CONF_DIR}/jmx_exporter_config.yaml"
-echo "Starting JMX standalone exporter with [${MONITOR_ARGS}]"
-java ${MONITOR_ARGS} &
-
-echo "Starting OTEL Collector on port 4318"
-docker run -d --name collector --network $NETWORK_NAME -p 4318:4318 -v ${CONF_DIR}/collector-config.yaml otel/opentelemetry-collector > otel_collector.log 2>&1
-
 echo "Starting Prometheus on port 9090"
 docker run -d --name prometheus --network $NETWORK_NAME -p 9090:9090 -v ${CONF_DIR}/prometheus.yml:/etc/prometheus/prometheus.yml prom/prometheus  > prometheus.log 2>&1
 
