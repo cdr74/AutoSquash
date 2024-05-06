@@ -134,13 +134,6 @@ if ! [ -x "$(command -v jar)" ]; then
 fi
 cd ${SQUASH_WORK_DIR}
 
-## PATCHING: sartup.sh
-mv ${SQUASH_DIR}/bin/startup.sh ${SQUASH_DIR}/bin/startup.sh.orig
-if [ $? -eq 0 ]; then
-  echo $(printf "${SUCCESS} > Success - Backup created ${BASE_DIR}/templates/SquashTM/bin/startup.sh.orig${END}")
-else
-  exit 1
-fi
 cp ${BASE_DIR}/templates/SquashTM/bin/startup.sh ${SQUASH_DIR}/bin/
 if [ $? -eq 0 ]; then
   echo $(printf "${SUCCESS} > Success - Updated ${BASE_DIR}/templates/SquashTM/bin/startup.sh${END}")
@@ -148,51 +141,19 @@ else
   exit 1
 fi
 
-## PATCHING: squash-tm.war
-
 ## ADD SSL
-PROPERTY=templates/SquashTM/war/WEB-INF/classes/config/application.properties
-cp ${BASE_DIR}/${PROPERTY}.orig ${BASE_DIR}/${PROPERTY}
-echo $SSL_PORT >> ${BASE_DIR}/${PROPERTY}
-echo $SSL_KEY_STORE >> ${BASE_DIR}/${PROPERTY}
-echo $SSL_KEY_STORE_PASSWORD >> ${BASE_DIR}/${PROPERTY}
-echo $SSL_KEY_STORE_TYPE >> ${BASE_DIR}/${PROPERTY}
-echo $SSL_KEY_SOTRE_KEYALIAS >> ${BASE_DIR}/${PROPERTY}
-echo $(printf "${SUCCESS} > Success - Adding SSL support to template war file application.properties${END}")
-
-mkdir war_patch
-cd war_patch
-cp ${SQUASH_DIR}/bundles/squash-tm.war .
-jar -uf ./squash-tm.war -C ${BASE_DIR}/templates/SquashTM/war WEB-INF/classes/config/application.properties
+cp ${BASE_DIR}/templates/SquashTM/conf/squash.tm.cfg.properties ${SQUASH_DIR}/conf/
 if [ $? -eq 0 ]; then
-  echo $(printf "${SUCCESS} > Success - Creating new squash-tm.war file${END}")
-else
-  exit 1
-fi
-mv ${SQUASH_DIR}/bundles/squash-tm.war ${SQUASH_DIR}/bundles/squash-tm.war.orig
-if [ $? -eq 0 ]; then
-  echo $(printf "${SUCCESS} > Success - Backup created ${SQUASH_DIR}/bundles/squash-tm.war.orig${END}")
-else
-  exit 1
-fi
-cp ./squash-tm.war ${SQUASH_DIR}/bundles/squash-tm.war
-if [ $? -eq 0 ]; then
-  echo $(printf "${SUCCESS} > Success - Updated ${SQUASH_DIR}/bundles/squash-tm.war${END}")
+  echo $(printf "${SUCCESS} > Success - Updated ${BASE_DIR}/templates/SquashTM/conf/squash.tm.cfg.properties${END}")
 else
   exit 1
 fi
 
-cd ${SQUASH_WORK_DIR}
-rm -rf war_patch
-if [ $? -eq 0 ]; then
-  echo $(printf "${SUCCESS} > Success - Clean-up${END}")
-else
-  exit 1
-fi
-
-## XAVIER
-## TODO: Download from GitHub might be restricted
-## Is Open-telemetry package available in our Nexus setup ?
+echo $SSL_PORT >> ${SQUASH_DIR}/conf/squash.tm.cfg.properties
+echo $SSL_KEY_STORE >> ${SQUASH_DIR}/conf/squash.tm.cfg.properties
+echo $SSL_KEY_STORE_PASSWORD >> ${SQUASH_DIR}/conf/squash.tm.cfg.properties
+echo $SSL_KEY_STORE_TYPE >> ${SQUASH_DIR}/conf/squash.tm.cfg.properties
+echo $SSL_KEY_SOTRE_KEYALIAS >> ${SQUASH_DIR}/conf/squash.tm.cfg.properties
 
 
 echo ""
