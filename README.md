@@ -1,53 +1,39 @@
 # AutoSquash
 
-Automate the process to download Squash TM and Orchestrator from official distribution, patch for secure and scalable operation. Create a package (tar ball or docket tbd) for distribution to infrastructure.
+Automate the process to download Squash TM and Orchestrator from official distribution and patch for secure and scalable operation. Create a package (tar ball or docket tbd) for distribution locally.
 
-The goal is that a distribution package is created in a reproducible fashion without any manual interaction.
+The goal is that a secured distribution package is created in a reproducible fashion without any manual interaction.
 
 **High level approach**
 
 -   Use the prod tar.gz from the official distribution
--   Create a copy with all files that need changes in templates folder
--   Automate the patching and re-packaging process (coule be run in a pipeline)
+-   Create a copy with all config files that need changes in templates folder
+-   Unpack org distribution and apply config from template folder
 -   Create another script (pipeline) to distribute the re-configured set-up
 
 _Caution_: there are multiple sources of old verions on bitbucket, github etc!
 
 ## Monitoring
 
-Here are all the involved ports / agents / processes:
+Squash TM is a Spring Boot app and comes with actuator; which makes it well prepared for Prmetheus / Grafana stack... unfortunatly micrometer is not added (but in the backlog from Squash team):
 
--   Tomcat JMX is enabled as part of the startup.sh
-    Exposes data on port 9099
-    Use this to check jmx: jconsole service:jmx:rmi:///jndi/rmi://localhost:9099/jmxrmi
--   Prometheus JMX exporter runs as seperate process and is started in startup.sh
-    - Grabs data from JMX port 9099
-    - Exposes data on port 9033 
-    - Config in jmx_exporter_config.yml
-      https://github.com/prometheus/jmx_exporter/tree/release-0.20.0
--   OTEL agent (1 per JVM) runs as part of the tomcat process to collect Java metrics using byte code instrumentation
-    -   the agent sends data over http to the OTEL collector listening on 4318 (stratup.sh)
-        https://opentelemetry.io/docs/languages/java/automatic/configuration/
--   OTEL collector (1 per cluster) to aggregate data from collectors and exports to prometheus (format change)
-    -   the collector sends data to prometheus listening on 9316 (otel-agent-collector.yml)
-        https://opentelemetry.io/docs/collector/configuration/
--   Prometheus can be accessed from port 9090
--   Grafana to visualize data runs on port 3000 and connects to prometheus over docker network (http://prometheus:9090)
+-   Enable actuator with the `squash.tm.cfg.properties` file in templates `configure_squash.sh`adds the content dynamically 
+-   Prometheus (docker runtime) collects the data and runs on 9090
+-   Grafana (docker runtime) visualizes data and runs on 3000; add prometheus as data source (http://localhost:9090)
+
+See `start_monitoring.sh` and `stop_monitoring.sh` for info on Prometheus and Grafana.
 
 ## Squash TM
 
-Squash TM is a Spring Boot based app with integrated Tomcat v9.
+Squash TM is a Spring Boot based app with integrated Tomcat v9 and actuator for prod observability.
 
 **Completed**
 
--   Set proper GC param in "startup.sh" (currently at 2GB, should be 8GB in prod)
--   Disable http and enforce https in "application.properties", requires patching of war file
--   Enable JMX for monitoring in "startup.sh" and add JMX scraper from Prometheus
--   Enable OTEL javaagent in "startup.sh"; needs download of the agent
--   Connect with OTEL collector and the send dat to prometheus (should be seperate package for distribution)
+-   Set Java GC to 8GB (2GB for test) and enable G1 in `startup.sh`
+-   Disable http and enforce https in `squash.tm.cfg.properties` (could also be done in application.properties - patch war file)
 -   Enabled Xsquash4GitLab connector (plugin)
 -   Enabled gitlab.bugtracker bugtracker (plugin)
--   Added Grafana to Prometheus
+-   Added Grafana and Prometheus
 
 **Todo**
 
